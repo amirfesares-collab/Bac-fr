@@ -1,0 +1,445 @@
+
+<h2 class="sr-only">Lecteur podcast de révision — 15 lectures linéaires pour le bac blanc oral de français</h2>
+<style>
+.pod { padding: 1rem 0; font-family: var(--font-sans); }
+.pod-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem; }
+.pod-cover { width: 56px; height: 56px; border-radius: var(--border-radius-md); background: #534AB7; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pod-cover i { font-size: 26px; color: #EEEDFE; }
+.pod-meta h3 { margin: 0 0 2px; font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.pod-meta p { margin: 0; font-size: 12px; color: var(--color-text-secondary); }
+.now-playing { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.np-badge { font-size: 10px; font-weight: 500; color: #534AB7; background: #EEEDFE; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+.np-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 2px; }
+.np-sub { font-size: 12px; color: var(--color-text-secondary); margin: 0 0 12px; }
+.np-text { font-size: 13px; color: var(--color-text-primary); line-height: 1.7; max-height: 180px; overflow-y: auto; border-top: 0.5px solid var(--color-border-tertiary); padding-top: 10px; }
+.np-text b { font-weight: 500; color: #534AB7; }
+.controls { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.btn-play { width: 40px; height: 40px; border-radius: 50%; background: #534AB7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.btn-play i { font-size: 18px; color: white; }
+.btn-nav { width: 32px; height: 32px; border-radius: 50%; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-nav i { font-size: 14px; color: var(--color-text-secondary); }
+.btn-nav:disabled { opacity: 0.35; cursor: not-allowed; }
+.speed-btn { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 4px 8px; cursor: pointer; margin-left: auto; }
+.ep-list { display: flex; flex-direction: column; gap: 4px; }
+.ep-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--border-radius-md); cursor: pointer; border: 0.5px solid transparent; transition: background 0.1s; }
+.ep-item:hover { background: var(--color-background-secondary); }
+.ep-item.active { background: #EEEDFE; border-color: #AFA9EC; }
+.ep-num { font-size: 11px; font-weight: 500; color: #534AB7; min-width: 30px; }
+.ep-info { flex: 1; min-width: 0; }
+.ep-title { font-size: 13px; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ep-author { font-size: 11px; color: var(--color-text-secondary); }
+.ep-item.active .ep-title { color: #534AB7; font-weight: 500; }
+.reading-icon { font-size: 14px; color: #534AB7; }
+.progress-bar { height: 3px; background: var(--color-border-tertiary); border-radius: 2px; margin: 10px 0 4px; cursor: pointer; }
+.progress-fill { height: 100%; background: #534AB7; border-radius: 2px; transition: width 0.3s; }
+.time-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-secondary); }
+.voice-msg { font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 6px 10px; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.api-box { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px 14px; margin-bottom: 1rem; }
+.api-box label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); display: block; margin-bottom: 6px; }
+.api-row { display: flex; gap: 8px; align-items: center; }
+.api-input { flex: 1; font-size: 12px; padding: 7px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-primary); outline: none; font-family: monospace; }
+.api-save { font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: var(--border-radius-md); background: #534AB7; color: white; border: none; cursor: pointer; white-space: nowrap; }
+.api-status { font-size: 11px; margin-top: 6px; }
+.api-status.ok { color: #22c55e; }
+.api-status.err { color: #ef4444; }
+.api-status.loading { color: #534AB7; }
+</style>
+
+<div class="pod">
+<div class="pod-header">
+  <div class="pod-cover"><i class="ti ti-book-2" aria-hidden="true"></i></div>
+  <div class="pod-meta">
+    <h3>Révision Bac Blanc Oral</h3>
+    <p>15 lectures linéaires · Français Première</p>
+  </div>
+</div>
+
+<div class="api-box">
+  <label for="api-key-input">🔑 Clé API ElevenLabs (stockée localement, jamais envoyée ailleurs)</label>
+  <div class="api-row">
+    <input class="api-input" id="api-key-input" type="password" placeholder="sk_..." autocomplete="off" />
+    <button class="api-save" id="api-save-btn">Enregistrer</button>
+  </div>
+  <div class="api-status" id="api-status"></div>
+</div>
+
+<div class="now-playing">
+  <div class="np-badge" id="np-badge">LL1</div>
+  <p class="np-title" id="np-title">La scène de première vue (coup de foudre)</p>
+  <p class="np-sub" id="np-sub">Abbé Prévost — Manon Lescaut, 1731</p>
+  <div class="progress-bar" id="prog-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="time-row"><span id="t-cur">0:00</span><span id="t-tot">--:--</span></div>
+  <div class="controls">
+    <button class="btn-nav" id="btn-prev" title="Précédent"><i class="ti ti-player-skip-back" aria-hidden="true"></i></button>
+    <button class="btn-play" id="btn-play" title="Lire"><i class="ti ti-player-play" id="play-icon" aria-hidden="true"></i></button>
+    <button class="btn-nav" id="btn-next" title="Suivant"><i class="ti ti-player-skip-forward" aria-hidden="true"></i></button>
+    <button class="speed-btn" id="btn-speed">1×</button>
+  </div>
+  <div class="voice-msg"><i class="ti ti-info-circle" aria-hidden="true"></i>Utilise les écouteurs pour une meilleure concentration.</div>
+  <div class="np-text" id="np-text"></div>
+</div>
+
+<div class="ep-list" id="ep-list"></div>
+</div>
+
+<script>
+const episodes = [
+  {
+    num:"LL1", title:"La scène de première vue (coup de foudre)", author:"Abbé Prévost — Manon Lescaut, 1731",
+    text:`<b>Contexte.</b> Des Grieux, 17 ans, est à Amiens la veille de son départ. Il voit descendre Manon d'un coche. Événement perturbateur du roman.<br><br>
+<b>Problématique :</b> Comment le coup de foudre entre Des Grieux et Manon est-il représenté ?<br><br>
+<b>Mouvement 1 — Les circonstances de la rencontre.</b> Cadre réaliste (Amiens, Tiberge, coche d'Arras). Interjection "Hélas !" et conditionnel passé → regret rétrospectif. La curiosité comme péché originel.<br><br>
+<b>Mouvement 2 — La fascination de Des Grieux.</b> Adversatif "Mais" isole Manon. Gradation ascendante : fort jeune → si charmante → enflammé. Anaphore "moi, qui… moi, dis-je…" → métamorphose. Métaphore du feu. Périphrase "la maîtresse de mon cœur".<br><br>
+<b>Mouvement 3 — Les premiers échanges.</b> Manon : ingénuité feinte. Discours indirect → contrôle du narrateur. "Un coup mortel pour mes désirs." Prolepse finale → ironie tragique.<br><br>
+<b>Procédés :</b> Métaphore du feu · anaphore · prolepse · ironie tragique · point de vue interne.<br><br>
+<b>Citation :</b> "Je me trouvai enflammé tout d'un coup jusqu'au transport."`
+  },
+  {
+    num:"LL2", title:"La séparation entre Des Grieux et son père", author:"Abbé Prévost — Manon Lescaut, 1731",
+    text:`<b>Contexte.</b> DG retrouve son père au Luxembourg pour le convaincre de sauver Manon. Fin de l'échange : rupture définitive.<br><br>
+<b>Problématique :</b> En quoi ce dialogue agonistique conduit-il à une rupture vers la marginalité ?<br><br>
+<b>Mouvement 1 — La tentative pathétique de DG.</b> Génuflexion, pleurs, impératifs suppliants. Questions rhétoriques + conditionnel d'irréel. Souvenir de la mère convoqué.<br><br>
+<b>Mouvement 2 — La réaction inflexible du père.</b> GN "ton sec et dur". Isotopie de la colère. Négations omniprésentes. Asyndète glaciale. Futur de certitude.<br><br>
+<b>Mouvement 3 — Les adieux définitifs.</b> Éloignement spatial symbolique. Isotopie de la désobéissance. Parallélisme des adieux : "fils ingrat et rebelle" / "père barbare et dénaturé". Point de non-retour.<br><br>
+<b>Procédés :</b> Registre pathétique · asyndète · parallélisme · isotopie de la colère.<br><br>
+<b>Citation :</b> "Adieu, père barbare et dénaturé."`
+  },
+  {
+    num:"LL3", title:"La mort de Manon", author:"Abbé Prévost — Manon Lescaut, 1731",
+    text:`<b>Contexte.</b> Dénouement. Manon et DG fuient dans le désert américain. Manon meurt d'épuisement. DG raconte rétrospectivement.<br><br>
+<b>Problématique :</b> Comment l'auteur représente-t-il ce récit pathétique et tragique ?<br><br>
+<b>Mouvement 1 — La mise en place du récit.</b> Présent d'énonciation : "j'achève un récit qui me tue". Interpellation du lecteur. Laconisme = pudeur de la douleur.<br><br>
+<b>Mouvement 2 — Éros et Thanatos.</b> Isotopie de l'amour + isotopie de la mort entremêlées. Passé simple : soudaineté. Euphémisme "Je la perdis". Énumération ternaire → progression inexorable.<br><br>
+<b>Mouvement 3 — Punition du Ciel.</b> Allégorie du Ciel. Isotopie du malheur. Rédemption de Manon par la mort.<br><br>
+<b>Procédés :</b> Éros/Thanatos · euphémismes · focalisation interne · allégorie · laconisme.<br><br>
+<b>Citation :</b> "J'achève en peu de mots un récit qui me tue."`
+  },
+  {
+    num:"LL4", title:"Portrait de L. — engagement en ligne", author:"Alice Zeniter — Roman contemporain",
+    text:`<b>Contexte.</b> Début du roman. L., marginale, vit dans un studio précaire. Juillet 2010 : WikiLeaks publie 90 000 documents militaires. L. trouve un engagement — et rencontre Elias.<br><br>
+<b>Problématique :</b> Comment Zeniter dépeint-elle l'évolution de L. vers une existence fondée sur l'engagement ?<br><br>
+<b>Mouvement 1 — Cadre précaire.</b> "Sous-sous-louer" → précarité redoublée. Métaphore oxymorique "caverne suspendue". "Le dedans brûlait encore plus que l'été."<br><br>
+<b>Mouvement 2 — L'irruption de WikiLeaks.</b> Date précise = effet de réel. Mois d'août englouti. Ironie : sublime et couleur des cheveux d'Assange.<br><br>
+<b>Mouvement 3 — Vacuité du travail.</b> Accumulation de négations → indifférence totale au réel.<br><br>
+<b>Mouvement 4 — Relation fondatrice.</b> "Par contre, parfaitement." Elias = identité numérique et intellectuelle. Coup de foudre intellectuel.<br><br>
+<b>Citation :</b> "Le dedans brûlait encore plus que l'été."`
+  },
+  {
+    num:"LL5", title:"Servitude volontaire — interpellation du peuple", author:"La Boétie — Discours de la servitude volontaire, v. 1546",
+    text:`<b>Contexte.</b> La Boétie interpelle directement le peuple qui accepte la tyrannie et lui montre que sa liberté ne dépend que de sa volonté.<br><br>
+<b>Problématique :</b> En quoi ce pamphlet affirme-t-il que la liberté repose sur la volonté de ne plus consentir ?<br><br>
+<b>Mouvement 1 — Interpellation polémique.</b> Vocabulaire péjoratif : "Pauvres, misérables, insensés". Gradation des biens perdus. Verbe pronominal → peuple victime ET acteur.<br><br>
+<b>Mouvement 2 — Le maître, colosse aux pieds d'argile.</b> Négation restrictive : "n'a que deux yeux". Antonomase "argus". D'où vient sa force, sinon de vous ?<br><br>
+<b>Mouvement 3 — Incompatibilité bien du peuple / bien du maître.</b> Antithèses vie/destruction. Métaphore de la bride → dénaturation de l'homme.<br><br>
+<b>Mouvement 4 — Maxime finale.</b> Impératif "soyez résolus". Futur de certitude. Un seul mot suffit : vouloir.<br><br>
+<b>Citation :</b> "Il ne faut pas l'attaquer, mais seulement vouloir."`
+  },
+  {
+    num:"LL6", title:"Servitude volontaire — le pouvoir de l'habitude", author:"La Boétie — Discours de la servitude volontaire, v. 1546",
+    text:`<b>Contexte.</b> La Boétie explore la cause première de la servitude : l'habitude, seconde nature aliénante. Il lui oppose une élite clairvoyante.<br><br>
+<b>Problématique :</b> Comment La Boétie dénonce-t-il le pouvoir de l'habitude ?<br><br>
+<b>Mouvement 1 — L'habitude, cause de la servitude.</b> Analogie du cheval : résistance → acceptation → fierté du harnais. Adverbe "toujours" grave la fatalité. Réfutation : les années ne donnent jamais le droit de mal faire.<br><br>
+<b>Mouvement 2 — L'élite résistante.</b> "Mieux nés" = noblesse intellectuelle. Comparaison avec Ulysse cherchant "la fumée de sa maison". Quête des droits naturels.<br><br>
+<b>Mouvement 3 — L'élite de l'entendement.</b> Grosse populace / hommes cultivés. Triple dimension du temps. La liberté survivrait même si bannie du monde entier.<br><br>
+<b>Procédés :</b> Analogie du cheval · référence à Ulysse · opposition nature/habitude · conditionnel d'irréel.<br><br>
+<b>Citation :</b> "Toujours en est-il quelques-uns mieux nés qui sentent le poids du joug."`
+  },
+  {
+    num:"LL7", title:"Servitude volontaire — critique des courtisans", author:"La Boétie — Discours de la servitude volontaire, v. 1546",
+    text:`<b>Contexte.</b> La Boétie démontre que les courtisans sont plus aliénés que les simples esclaves : ils sacrifient leur nature entière.<br><br>
+<b>Problématique :</b> En quoi cet extrait blâme-t-il les courtisans renonçant volontairement à leur liberté ?<br><br>
+<b>Mouvement 1 — Critique virulente.</b> "Ces gens-là" → mise à distance méprisante. Question rhétorique : s'approcher du tyran = s'éloigner de la liberté. "Embrasser et serrer à deux mains la servitude."<br><br>
+<b>Mouvement 2 — Le courtisan, plus servile que le laboureur.</b> Gradation : complaire → se rompre → se tourmenter → se tuer → se dénaturer. Servitude sans fin vs liberté du laboureur hors-tâche.<br><br>
+<b>Mouvement 3 — Appel à la prise de conscience.</b> Questions superlatives. Élargissement à tout être humain. Énumération des biens perdus : aise, liberté, corps, vie.<br><br>
+<b>Citation :</b> "Il faut qu'ils sacrifient leur goût au sien, forcent leur tempérament, qu'ils se débrouillent de leur propre nature."`
+  },
+  {
+    num:"LL8", title:"Idylle — éloge de la liberté des oiseaux", author:"Antoinette Deshoulières — Poésies, 1688",
+    text:`<b>Contexte.</b> Poème lyrique et philosophique. La poète fait l'éloge des animaux libres pour critiquer la servitude volontaire des hommes. XVIIe siècle, tradition bucolique et stoïcisme.<br><br>
+<b>Problématique :</b> En quoi cette idylle fait-elle l'éloge de la liberté tout en fustigeant la servitude humaine ?<br><br>
+<b>Mouvement 1 — La reverdie et l'Amour libérateur.</b> Hiver = geôlier allégorique. Négations partielles → libération de la nature. L'Amour = "âme de l'univers". Comparaison Hiver/indifférence.<br><br>
+<b>Mouvement 2 — Critique de la servitude volontaire.</b> L'éducation apprend à "combattre" la nature : choix bizarre, artificiel. "Ingrats esclaves que nous sommes." Oiseaux = modèle de liberté. Négation restrictive : "il n'est de liberté que chez les animaux."<br><br>
+<b>Mouvement 3 — Destin commun face à la contrainte.</b> Filets et "dehors trompeurs" menacent hommes et oiseaux. Apostrophe pathétique. Sentence : "Vivre dans la contrainte est le plus grand des maux."<br><br>
+<b>Citation :</b> "Il n'est de sincère langage, il n'est de liberté que chez les animaux."`
+  },
+  {
+    num:"LL9", title:"Scène d'exposition : Blazius et Dame Pluche", author:"Alfred de Musset — On ne badine pas avec l'amour, 1834",
+    text:`<b>Contexte.</b> Ouverture de la pièce. Un Chœur présente deux messagers grotesques annonçant le retour de Perdican et Camille au château.<br><br>
+<b>Problématique :</b> En quoi cette double présentation comique remplit-elle la fonction de séduction et d'information ?<br><br>
+<b>Mouvement 1 — Arrivée de Blazius.</b> Chœur à l'antique. Rondeur physique ≠ fonction spirituelle. Métaphore de l'amphore → contenant à vin. Retardement comique : veut du vin avant la nouvelle. Éloge naïf de Perdican.<br><br>
+<b>Mouvement 2 — Entrée de Dame Pluche.</b> Symétrie inversée. "Durement cahotée" vs "doucement bercé". Pluche = aigreur, maladie, stérilité. Fausse dévotion : chapelet + insultes. Vinaigre vs vin. Camille : virginale, inadaptée au monde.<br><br>
+<b>Procédés :</b> Chœur antique · diptyque · antithèse · satire du clerc · registre comique.<br><br>
+<b>Citation :</b> "Vous arrivez comme la fièvre, en faisant trembler tout ce que vous touchez."`
+  },
+  {
+    num:"LL10", title:"Victoire des sentiments sur la religion", author:"Alfred de Musset — On ne badine pas avec l'amour, Acte II sc. 5",
+    text:`<b>Contexte.</b> Camille veut entrer au couvent. Perdican répond par deux grandes tirades : réquisitoire contre la religion, plaidoyer pour l'amour.<br><br>
+<b>Problématique :</b> En quoi cette scène d'adieu permet-elle à Perdican de fustiger la religion et de faire l'éloge de l'amour ?<br><br>
+<b>Mouvement 1 — Réquisitoire contre la religion.</b> Anaphore "savent-elles". Chiasme : mensonge de l'amour humain / mensonge de l'amour divin (plus grave). Crime de corrompre des vierges ("chuchoter"). Métaphore du "masque de plâtre". Victoire du cœur qui "ne sait pas lire".<br><br>
+<b>Mouvement 2 — Plaidoyer pour l'amour.</b> Fausse rupture "Adieu, Camille". Double tableau sombre (vices masculins + féminins). Métaphore de l'égout. Connecteur "mais" → renversement. L'amour "saint et sublime". Rythme ternaire en "souvent". "J'ai aimé" : seul bilan qui compte.<br><br>
+<b>Procédés :</b> Anaphore · chiasme · rythme ternaire · antanaclase · registre lyrique romantique.<br><br>
+<b>Citation :</b> "J'ai souffert souvent, je me suis trompé quelquefois, mais j'ai aimé."`
+  },
+  {
+    num:"LL11", title:"De l'hésitation à la révolte — monologue de Perdican", author:"Alfred de Musset — On ne badine pas avec l'amour, Acte III sc. 2",
+    text:`<b>Contexte.</b> Perdican s'empare d'une lettre de Camille à sœur Louise. Il hésite, lit, découvre la manipulation, décide la vengeance.<br><br>
+<b>Problématique :</b> Que révèle ce monologue des sentiments des deux protagonistes ?<br><br>
+<b>Mouvement 1 — Hésitation morale.</b> Triple interrogation rhétorique → aveu progressif de l'amour. Mot "singulière" : différence de Camille. Le cachet déjà brisé = alibi moral.<br><br>
+<b>Mouvement 2 — La lettre révèle Camille.</b> Triomphe orgueilleux voilé. Lexique tragique pour amplifier son mérite. Fausse naïveté. Duplicité révélée.<br><br>
+<b>Mouvement 3 — Indignation.</b> Anaphore du pronom "moi". Orgueil blessé. Généralisation : tout le système couvent.<br><br>
+<b>Mouvement 4 — Vengeance.</b> Ironie antiphrase ("bonnes amies"). Négations de défense. Décision : courtiser Rosette → drame annoncé.<br><br>
+<b>Citation :</b> "Quel empire a donc pris sur moi cette singulière fille ?"`
+  },
+  {
+    num:"LL12", title:"Du conflit esthétique au conflit ontologique", author:"Yasmina Reza — Art, 1994",
+    text:`<b>Contexte.</b> Marc tente de se réconcilier avec Serge après avoir insulté le tableau blanc d'Antrios. La fausse humilité déclenche un duel philosophique autour de Sénèque.<br><br>
+<b>Problématique :</b> En quoi la scène marque-t-elle le passage d'un conflit esthétique à un conflit ontologique ?<br><br>
+<b>Mouvement 1 — Le masque de l'apaisement.</b> "J'ai réfléchi. J'ai réfléchi." Transfert lexical : absurde → poétique. Serge démonte : "ton suave et subalterne". Rythme ternaire d'autocritique.<br><br>
+<b>Mouvement 2 — Le duel philosophique.</b> "Lis Sénèque." → injonction de maître. Paradoxe : le remède perçu comme poison. Serge anticipe les griefs de Marc.<br><br>
+<b>Mouvement 3 — La rupture.</b> Jeu sur la ponctuation orale. Marc acculé. "Tu manques d'humour, tout bêtement." Alliance Serge/Yvan → exclusion. Retour trivial au quotidien (cinéma raté).<br><br>
+<b>Procédés :</b> Stichomythie · registre métalinguistique · paradoxe pharmakon · ironie.<br><br>
+<b>Citation :</b> "Tu manques d'humour, tout bêtement."`
+  },
+  {
+    num:"LL13", title:"« Le Mal »", author:"Arthur Rimbaud — Cahiers de Douai, 1870",
+    text:`<b>Contexte.</b> Rimbaud, 16 ans, en pleine guerre franco-prussienne. Ce sonnet en alexandrins dénonce la guerre et l'instrumentalisation de la religion.<br><br>
+<b>Problématique :</b> En quoi ce sonnet donne-t-il à entendre un cri de révolte radical et poétique ?<br><br>
+<b>Mouvement 1 — La révolte du poète (quatrains).</b> "Crachats rouges de la mitraille." Métaphore filée du brasier. Armes personnifiées (plus vivantes que les soldats). Déshumanisation : "tas fumant". Apostrophe lyrique "Nature !" → nature sacrée ≠ Dieu. Antithèses ciel bleu/feu, joie/broie.<br><br>
+<b>Mouvement 2 — L'indifférence de la religion (tercets).</b> Article indéfini "un Dieu" → mise à distance. Isotopie du sommeil (indifférence divine). Isotopie du luxe. Scène pathétique des mères en bonnet noir. Effet de chute : "le gros sou lié dans leur mouchoir". Allitération [s] → douceur hypocrite.<br><br>
+<b>Procédés :</b> Hypotypose · isotopies · apostrophe · allitérations · effet de chute.<br><br>
+<b>Citation :</b> "Pauvres morts ! dans l'été, dans l'herbe, dans ta joie, / Nature !"`
+  },
+  {
+    num:"LL14", title:"« Ma Bohème »", author:"Arthur Rimbaud — Cahiers de Douai, 1870",
+    text:`<b>Contexte.</b> Rimbaud, 16 ans, après une fugue à Douai. Dernier poème du recueil. Autoportrait en errance et manifeste poétique.<br><br>
+<b>Problématique :</b> En quoi ce sonnet est-il une ode à la liberté et le manifeste d'un nouvel art poétique ?<br><br>
+<b>Mouvement 1 — Vagabondage libérateur.</b> Titre polysémique : vie d'artiste + nomadisme. Imparfait itératif "Je m'en allais". Saturation du "je". Interjection enfantine "Oh ! là là !". Muse tutoyée → impertinence.<br><br>
+<b>Mouvement 2 — Richesse poétique face au dénuement.</b> Poches crevées, paletot usé. Rime crevées/rêvées. Métaphore Petit-Poucet rêveur → sème des rimes. Rejet du mot "rimes" au centre du poème. Étoiles qui font "frou-frou". Synesthésie : écouter les étoiles.<br><br>
+<b>Mouvement 3 — Nouvel art poétique.</b> Lyre → élastiques de souliers → subversion. Césures inhabituelles. Hypallage "souliers blessés". Pied métrique + cœur = union de l'art et de l'émotion.<br><br>
+<b>Procédés :</b> Imparfait itératif · synesthésie · hypallage · subversion des symboles lyriques.<br><br>
+<b>Citation :</b> "Je semais en courant les rimes."`
+  },
+  {
+    num:"LL16", title:"Sonnet en prose — poétique du neutre", author:"Jacques Roubaud — Signe d'appartenance, 1967",
+    text:`<b>Contexte.</b> Roubaud, mathématicien et poète OuLiPo. Sonnet en prose sans rimes ni mètres : il en garde seulement la dialectique interne. Substitue une poétique du neutre au lyrisme traditionnel.<br><br>
+<b>Problématique :</b> Dans quelle mesure ce sonnet substitue-t-il une poétique du neutre et du signe au lyrisme traditionnel ?<br><br>
+<b>Mouvement 1 — Cadre spatio-temporel brouillé.</b> "Sans hivers, sans lieux". Présent omnitemporel. Synesthésie inversée (vue et ouïe privées de sensations). "Je ne dis pas" → ascèse verbale. "Je suis soir et neutre" → anti-épanchement.<br><br>
+<b>Mouvement 2 — Abandon du lyrisme.</b> "Sentier amour" non suivi. Blanc de la page = miroir de stérilité. "Je trouve peu / je prends peu" → inspiration minimale.<br><br>
+<b>Mouvement 3 — Lieu poétique neutre et inquiétant.</b> Fontaine de "signes" (pas de sagesse). Rythme ternaire du refus. Écho au v. 1 → atopie renforcée. Questions finales → aporie, angoisse, "je" sans ancrage.<br><br>
+<b>Procédés :</b> Sonnet en prose · négations privatives · atopie · synesthésie inversée · métapoésie.<br><br>
+<b>Citation :</b> "Je suis soir et neutre."`
+  }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let current = 0;
+let playing = false;
+let speed = 1;
+const speeds = [1, 1.25, 1.5, 0.75];
+let speedIdx = 0;
+let progressTimer = null;
+let startTime = null;
+let elapsed = 0;
+let currentAudio = null;  // HTMLAudioElement for ElevenLabs
+let elevenKey = localStorage.getItem('el_api_key') || '';
+
+// ElevenLabs — voix féminine française (Charlotte)
+const ELEVEN_VOICE_ID = 'XB0fDUnXU5powFXDhCwa'; // Charlotte (fr natural female)
+const ELEVEN_MODEL    = 'eleven_multilingual_v2';
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function stripHtml(html) {
+  return html.replace(/<br\s*\/?>/gi, '\n').replace(/<b>/gi, '').replace(/<\/b>/gi, '').replace(/<[^>]+>/g, '');
+}
+
+function fmt(s) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// ── API key UI ────────────────────────────────────────────────────────────────
+const apiInput  = document.getElementById('api-key-input');
+const apiStatus = document.getElementById('api-status');
+
+if (elevenKey) {
+  apiInput.value = elevenKey;
+  apiStatus.textContent = '✓ Clé enregistrée';
+  apiStatus.className = 'api-status ok';
+}
+
+document.getElementById('api-save-btn').addEventListener('click', () => {
+  const val = apiInput.value.trim();
+  if (!val) { apiStatus.textContent = 'Colle ta clé ici.'; apiStatus.className = 'api-status err'; return; }
+  localStorage.setItem('el_api_key', val);
+  elevenKey = val;
+  apiStatus.textContent = '✓ Clé enregistrée — tu peux lancer la lecture !';
+  apiStatus.className = 'api-status ok';
+});
+
+// ── List & player UI ──────────────────────────────────────────────────────────
+function renderList() {
+  const el = document.getElementById('ep-list');
+  el.innerHTML = episodes.map((e, i) => `
+    <div class="ep-item ${i === current ? 'active' : ''}" onclick="selectEp(${i})">
+      <span class="ep-num">${e.num}</span>
+      <div class="ep-info">
+        <div class="ep-title">${e.title}</div>
+        <div class="ep-author">${e.author.split('—')[0].trim()}</div>
+      </div>
+      ${i === current && playing ? '<i class="ti ti-volume reading-icon" aria-hidden="true"></i>' : ''}
+    </div>
+  `).join('');
+}
+
+function updateNowPlaying() {
+  const e = episodes[current];
+  document.getElementById('np-badge').textContent = e.num;
+  document.getElementById('np-title').textContent = e.title;
+  document.getElementById('np-sub').textContent = e.author;
+  document.getElementById('np-text').innerHTML = e.text;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === episodes.length - 1;
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('t-cur').textContent = '0:00';
+  document.getElementById('t-tot').textContent = '--:--';
+}
+
+function selectEp(i) {
+  stopSpeech();
+  current = i;
+  updateNowPlaying();
+  renderList();
+}
+
+// ── Stop ──────────────────────────────────────────────────────────────────────
+function stopSpeech() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  clearInterval(progressTimer);
+  playing = false;
+  elapsed = 0;
+  document.getElementById('play-icon').className = 'ti ti-player-play';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('t-cur').textContent = '0:00';
+  renderList();
+}
+
+// ── ElevenLabs TTS ────────────────────────────────────────────────────────────
+async function startSpeech() {
+  if (!elevenKey) {
+    apiStatus.textContent = '⚠️ Entre ta clé API ElevenLabs pour lancer la lecture.';
+    apiStatus.className = 'api-status err';
+    return;
+  }
+
+  const text = stripHtml(episodes[current].text);
+
+  // Show loading state
+  document.getElementById('play-icon').className = 'ti ti-loader-2';
+  document.getElementById('t-tot').textContent = '…';
+
+  try {
+    const targetUrl = `https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`;
+    const proxyUrl = targetUrl;
+
+    // API key chars must all be ASCII (ISO-8859-1 header constraint)
+    const safeKey = elevenKey.split('').filter(c => c.charCodeAt(0) < 128).join('');
+
+    const resp = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': safeKey,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
+      },
+      body: JSON.stringify({
+        text,
+        model_id: ELEVEN_MODEL,
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail?.message || `Erreur ${resp.status}`);
+    }
+
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.playbackRate = speed;
+    currentAudio = audio;
+
+    // Progress tracking
+    audio.addEventListener('loadedmetadata', () => {
+      document.getElementById('t-tot').textContent = fmt(audio.duration);
+    });
+
+    startTime = Date.now();
+    progressTimer = setInterval(() => {
+      if (!currentAudio) return;
+      const cur = currentAudio.currentTime;
+      const dur = currentAudio.duration || 1;
+      document.getElementById('prog-fill').style.width = Math.min((cur / dur) * 100, 100) + '%';
+      document.getElementById('t-cur').textContent = fmt(cur);
+    }, 300);
+
+    audio.addEventListener('ended', () => {
+      clearInterval(progressTimer);
+      playing = false;
+      document.getElementById('play-icon').className = 'ti ti-player-play';
+      document.getElementById('prog-fill').style.width = '100%';
+      renderList();
+      if (current < episodes.length - 1) {
+        setTimeout(() => { current++; updateNowPlaying(); renderList(); startSpeech(); }, 800);
+      }
+    });
+
+    audio.play();
+    playing = true;
+    document.getElementById('play-icon').className = 'ti ti-player-pause';
+    renderList();
+
+  } catch (e) {
+    apiStatus.textContent = '❌ ' + e.message;
+    apiStatus.className = 'api-status err';
+    document.getElementById('play-icon').className = 'ti ti-player-play';
+    playing = false;
+    renderList();
+  }
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (playing) { stopSpeech(); } else { startSpeech(); }
+});
+
+document.getElementById('btn-prev').addEventListener('click', () => {
+  if (current > 0) { selectEp(current - 1); }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (current < episodes.length - 1) { selectEp(current + 1); }
+});
+
+document.getElementById('btn-speed').addEventListener('click', () => {
+  speedIdx = (speedIdx + 1) % speeds.length;
+  speed = speeds[speedIdx];
+  document.getElementById('btn-speed').textContent = speed + '×';
+  if (currentAudio) currentAudio.playbackRate = speed;
+});
+
+document.getElementById('prog-bar').addEventListener('click', (e) => {
+  if (!currentAudio || !currentAudio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  currentAudio.currentTime = pct * currentAudio.duration;
+  document.getElementById('prog-fill').style.width = (pct * 100) + '%';
+});
+
+updateNowPlaying();
+renderList();
+</script>
